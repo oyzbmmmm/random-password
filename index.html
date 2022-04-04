@@ -11,6 +11,7 @@
             margin: 0;
             padding: 0;
         }
+        
         body {
             display: flex;
             justify-items: center;
@@ -18,12 +19,19 @@
             align-content: center;
             background: rgb(59, 59, 59);
             color: #fff;
-            
         }
+        
+        h1 {
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+        }
+        
         .main {
             width: 800px;
             padding: 20px;
         }
+        
         .info {
             display: flex;
             justify-items: center;
@@ -31,34 +39,59 @@
             align-content: center;
             padding: 10px 0;
         }
+        
         .info input {
             margin: 0 5px;
         }
+        
         #numbox {
-            padding: 5px;
+            padding: 7px 10px;
             width: 35px;
             margin-right: 10px;
+            background: none;
+            color: #fff;
+            border: 1px solid rgba(230, 92, 92, 0.274);
+            font-size: 1em;
+            display: inline-block;
+            vertical-align: middle;
         }
+        
+        #numbox:focus-visible {
+            /* border: 1px solid rgba(216, 45, 45, 0.274); */
+            outline: none;
+        }
+        
         .box-left {
             flex: 0.5;
+            display: flex;
         }
+        
         #submit {
             flex: 0.5;
             cursor: pointer;
             background: rgba(24, 38, 56, 0.473);
             color: #fff;
+            border: 1px solid rgba(16, 171, 209, 0.404);
+            border-radius: 8px;
         }
+        
+        #submit:hover {
+            background: rgb(16, 171, 209);
+        }
+        
         .history-box {
             display: flex;
             padding: 5px;
             border: 1px solid rgba(218, 218, 218, 0.212);
             margin-bottom: 3px;
         }
+        
         .history-line {
             padding: 0 10px;
             color: rgb(170, 217, 248);
-            word-break:break-all; 
+            word-break: break-all;
         }
+        
         .history-box:hover .history-line:after {
             content: 'copy';
             color: #fff;
@@ -68,14 +101,17 @@
             border-radius: 3px;
             cursor: pointer;
         }
+        
         .input {
             position: fixed;
             bottom: 0;
             opacity: 0;
         }
+        
         .history-box:nth-child(1) {
             background: rgb(105, 202, 173);
         }
+        
         #clean {
             display: flex;
             justify-items: center;
@@ -85,24 +121,61 @@
             padding: 15px;
             cursor: pointer;
         }
+        
+        .checkbox {
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: 1px solid rgba(243, 168, 168, 0.308);
+            cursor: pointer;
+        }
+        
+        .checkbox input {
+            display: none;
+        }
+        
+        .checked {
+            position: relative;
+            background: rgba(136, 5, 5, 0.192);
+            border: 1px solid rgba(216, 45, 45, 0.274);
+        }
+        
+        .checked::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-top: 20px solid #aa091160;
+            border-right: 20px solid transparent;
+        }
     </style>
 
 </head>
 
 <body>
     <div class="main">
+        <h1>Random password</h1>
         <div class="info">
             <div class="box-left">
-                <input type="checkbox" checked id="num">0-9
-                <input type="checkbox" checked id="letter">a-z
-                <input type="checkbox" checked id="cap">A-Z
-                <input type="checkbox" id="special">特殊符号
+                <div class="checkbox checked">
+                    <input type="checkbox" checked id="num"> 0-9
+                </div>
+                <div class="checkbox checked">
+                    <input type="checkbox" checked id="letter">a-z
+                </div>
+                <div class="checkbox checked">
+                    <input type="checkbox" checked id="cap">A-Z
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" id="special">特殊符号
+                </div>
                 <div>
-                    <input type="number" id="numbox" value="16">位
+                    <input type="text" id="numbox" value="16">位
                 </div>
             </div>
             <button id="submit">点击生成</button>
-            
+
         </div>
         <p>生成记录:</p>
         <div id="historybox"></div>
@@ -113,13 +186,29 @@
     let letter = document.querySelector('#letter')
     let cap = document.querySelector('#cap')
     let special = document.querySelector('#special')
+        // let numcheck = document.querySelector('#numcheck')
+        // let lettercheck = document.querySelector('#lettercheck')
+        // let capcheck = document.querySelector('#capcheck')
+        // let specialcheck = document.querySelector('#specialcheck')
+    let checkboxes = document.querySelectorAll('.checkbox')
+    checkboxes.forEach((item, index) => {
+        item.addEventListener('click', function() {
+            if (this.childNodes[1].checked) {
+                this.childNodes[1].checked = false
+                this.classList.remove('checked')
+            } else {
+                this.childNodes[1].checked = true
+                this.classList.add('checked')
+            }
+        })
+    })
     let numbox = document.querySelector('#numbox')
     let result = document.querySelector('#result')
     let submit = document.querySelector('#submit')
     let historybox = document.querySelector('#historybox')
     let history = localStorage.getItem('history')
     history = JSON.parse(history)
-    // 输出历史记录到dom
+        // 输出历史记录到dom
     let historyBoxResult = ''
     if (history != null) {
         history.forEach((item, index) => {
@@ -127,7 +216,7 @@
         })
         historybox.innerHTML = historyBoxResult
     }
-    
+
     submit.addEventListener('click', () => {
         let init_cap = [],
             init_num = [],
@@ -159,7 +248,7 @@
 
         //从本地获取历史数据
         let time = new Date().toLocaleString()
-        
+
         if (history == null) {
             history = []
         }
@@ -188,10 +277,10 @@
 
         copy()
     })
-    
+
     function copy() {
         let historyLines = document.querySelectorAll('.history-line')
-        historyLines.forEach( (item, index) => {
+        historyLines.forEach((item, index) => {
             item.addEventListener('click', function() {
                 console.log(this.innerText)
                 let input = document.createElement('input')
@@ -202,7 +291,7 @@
                 document.execCommand("copy");
                 this.innerText = '已成功复制'
                 this.style.color = 'red'
-                setTimeout( () => {
+                setTimeout(() => {
                     this.innerText = input.value
                     document.body.removeChild(input)
                 }, 1000)
@@ -210,7 +299,6 @@
         })
     }
     copy()
-
 </script>
 
 </html>
