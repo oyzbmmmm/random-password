@@ -84,6 +84,9 @@
             padding: 5px;
             border: 1px solid rgba(218, 218, 218, 0.212);
             margin-bottom: 3px;
+            margin-top: 5px;
+            position: relative;
+            cursor: pointer;
         }
         
         .history-line {
@@ -92,14 +95,15 @@
             word-break: break-all;
         }
         
-        .history-box:hover .history-line:after {
-            content: 'copy';
+        .history-box:hover:after {
+            content: '点击复制';
+            position: absolute;
+            right: 0;
             color: #fff;
             background: red;
-            margin: 0 10px;
-            padding: 2px 5px;
+            /* margin: 0 10px; */
+            padding: 0 5px;
             border-radius: 3px;
-            cursor: pointer;
         }
         
         .input {
@@ -149,6 +153,15 @@
             border-top: 20px solid #aa091160;
             border-right: 20px solid transparent;
         }
+        
+        .checked::after {
+            content: '✔';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 0;
+            height: 0;
+        }
     </style>
 
 </head>
@@ -156,6 +169,7 @@
 <body>
     <div class="main">
         <h1>Random password</h1>
+
         <div class="info">
             <div class="box-left">
                 <div class="checkbox checked">
@@ -177,7 +191,11 @@
             <button id="submit">点击生成</button>
 
         </div>
-        <p>生成记录:</p>
+        <div>
+            请自行选择密码组合，特殊符号：默认为不勾选
+        </div>
+        <p><svg t="1649312736974" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2211" width="16" height="16"><path d="M512 85.333333c235.637333 0 426.666667 191.029333 426.666667 426.666667S747.637333 938.666667 512 938.666667 85.333333 747.637333 85.333333 512 276.362667 85.333333 512 85.333333z m0 544a42.666667 42.666667 0 1 0 0 85.333334 42.666667 42.666667 0 0 0 0-85.333334z m0-362.666666a42.666667 42.666667 0 0 0-42.666667 42.666666v234.666667a42.666667 42.666667 0 1 0 85.333334 0V309.333333a42.666667 42.666667 0 0 0-42.666667-42.666666z" p-id="2212" fill="#d81e06"></path></svg>注意：本网站仅把密码保存在本地，请妥善保管好生成的密码<br>            如果你清除浏览器数据，或者一旦数据超出20条之后，密码会被销毁，且无法恢复
+        </p>
         <div id="historybox"></div>
     </div>
 </body>
@@ -186,11 +204,8 @@
     let letter = document.querySelector('#letter')
     let cap = document.querySelector('#cap')
     let special = document.querySelector('#special')
-        // let numcheck = document.querySelector('#numcheck')
-        // let lettercheck = document.querySelector('#lettercheck')
-        // let capcheck = document.querySelector('#capcheck')
-        // let specialcheck = document.querySelector('#specialcheck')
     let checkboxes = document.querySelectorAll('.checkbox')
+        // 点击事件，取反当前选择
     checkboxes.forEach((item, index) => {
         item.addEventListener('click', function() {
             if (this.childNodes[1].checked) {
@@ -202,13 +217,12 @@
             }
         })
     })
-    let numbox = document.querySelector('#numbox')
-    let result = document.querySelector('#result')
     let submit = document.querySelector('#submit')
     let historybox = document.querySelector('#historybox')
-    let history = localStorage.getItem('history')
-    history = JSON.parse(history)
-        // 输出历史记录到dom
+
+    // 从本地存储获取数据，取出时把json格式转为对象
+    let history = JSON.parse(localStorage.getItem('history'))
+        // 数据不为空，就输出历史记录到dom
     let historyBoxResult = ''
     if (history != null) {
         history.forEach((item, index) => {
@@ -234,19 +248,23 @@
         if (special.checked) {
             init_special = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_"]
         }
+
+        // 根据选择，拼串得到最后的数组
         let init_result = []
         init_result = init_result.concat(init_cap, init_num, init_special, init_letter)
 
-        let creatPwd = (num) => {
-            let resultPwd = ''
-            for (let i = 0; i < num; i++) {
-                resultPwd += init_result[Math.floor(Math.random() * init_result.length)]
+        // 几位数就循环执行几次随机，得到最终的结果
+        let creatPwd = num => {
+                let resultPwd = ''
+                for (let i = 0; i < num; i++) {
+                    resultPwd += init_result[Math.floor(Math.random() * init_result.length)]
+                }
+                return resultPwd
             }
-            return resultPwd
-        }
+            // 执行随机函数
         let pwd = creatPwd(numbox.value)
 
-        //从本地获取历史数据
+        // 时间
         let time = new Date().toLocaleString()
 
         if (history == null) {
@@ -261,38 +279,40 @@
         })
 
         // 如果数据大于20条，就删除最后一条
+        // console.log(`长度${history.length}`)
         if (history.length > 20) {
             history.pop(history[history.length])
-
         }
-        // 输出历史记录到dom
+        // console.log(`长度${history.length}`);
+        // 输出历史记录到dom，直接刷新dom
         let historyBoxResult = ''
         history.forEach((item, index) => {
             historyBoxResult += `<div class="history-box" style="background:${item.color}">${item.time} : <div class="history-line">${item.value}</div></div>`
         })
         historybox.innerHTML = historyBoxResult
 
-        // 最后存入
+        // 最后存入本地
+        console.log(history) //打印下
+            // 需要转为json格式
         localStorage.setItem('history', JSON.stringify(history))
-
         copy()
     })
 
     function copy() {
-        let historyLines = document.querySelectorAll('.history-line')
-        historyLines.forEach((item, index) => {
+        let historyBoxes = document.querySelectorAll('.history-box')
+        historyBoxes.forEach((item, index) => {
             item.addEventListener('click', function() {
-                console.log(this.innerText)
-                let input = document.createElement('input')
+                console.log(this.childNodes[1])
+                let input = document.createElement('textarea')
                 input.classList.add('input')
-                input.value = this.innerText
+                input.value = this.childNodes[1].innerText
                 document.body.appendChild(input);
                 input.select()
                 document.execCommand("copy");
-                this.innerText = '已成功复制'
-                this.style.color = 'red'
+                this.childNodes[1].innerText = '已成功复制'
+                this.childNodes[1].style.color = 'red'
                 setTimeout(() => {
-                    this.innerText = input.value
+                    this.childNodes[1].innerText = input.value
                     document.body.removeChild(input)
                 }, 1000)
             })
