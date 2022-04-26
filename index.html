@@ -40,13 +40,10 @@
             padding: 10px 0;
         }
         
-        .info input {
-            margin: 0 5px;
-        }
-        
-        #numbox {
+        #numbox,
+        #specialinput {
             padding: 7px 10px;
-            width: 35px;
+            width: 100px;
             margin-right: 10px;
             background: none;
             color: #fff;
@@ -56,13 +53,19 @@
             vertical-align: middle;
         }
         
-        #numbox:focus-visible {
+        #numbox:focus-visible,
+        #specialinput:focus-visible {
             /* border: 1px solid rgba(216, 45, 45, 0.274); */
             outline: none;
         }
         
         .box-left {
             flex: 0.5;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .check-info {
             display: flex;
         }
         
@@ -162,6 +165,19 @@
             width: 0;
             height: 0;
         }
+        
+        #deleteHistory {
+            /* display: none; */
+            cursor: pointer;
+            display: inline-block;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid rgba(243, 168, 168, 0.308);
+        }
+        
+        .gray {
+            color: rgb(170, 170, 170);
+        }
     </style>
 
 </head>
@@ -169,34 +185,45 @@
 <body>
     <div class="main">
         <h1>Random password</h1>
+        <div id="darkmode">模式切换</div>
 
         <div class="info">
             <div class="box-left">
-                <div class="checkbox checked">
-                    <input type="checkbox" checked id="num"> 0-9
+                <div class="check-info">
+                    <div class="checkbox checked">
+                        <input type="checkbox" checked id="num"> 0-9
+                    </div>
+                    <div class="checkbox checked">
+                        <input type="checkbox" checked id="letter">a-z
+                    </div>
+                    <div class="checkbox checked">
+                        <input type="checkbox" checked id="cap">A-Z
+                    </div>
+                    <div class="checkbox">
+                        <input type="checkbox" id="special">特殊符号
+                    </div>
+                    <div><input type="text" id="specialinput" value="!@#$%^&*"></div>
                 </div>
-                <div class="checkbox checked">
-                    <input type="checkbox" checked id="letter">a-z
+
+                <div class="check-info">
+
+                    <div style="margin-top: 10px;">
+                        <input type="text" id="numbox" value="16">位
+                    </div>
                 </div>
-                <div class="checkbox checked">
-                    <input type="checkbox" checked id="cap">A-Z
-                </div>
-                <div class="checkbox">
-                    <input type="checkbox" id="special">特殊符号
-                </div>
-                <div>
-                    <input type="text" id="numbox" value="16">位
-                </div>
+
             </div>
             <button id="submit">点击生成</button>
 
         </div>
-        <div>
+        <div id="historybox"></div>
+        <div class="gray">
             请自行选择密码组合，特殊符号：默认为不勾选
         </div>
-        <p><svg t="1649312736974" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2211" width="16" height="16"><path d="M512 85.333333c235.637333 0 426.666667 191.029333 426.666667 426.666667S747.637333 938.666667 512 938.666667 85.333333 747.637333 85.333333 512 276.362667 85.333333 512 85.333333z m0 544a42.666667 42.666667 0 1 0 0 85.333334 42.666667 42.666667 0 0 0 0-85.333334z m0-362.666666a42.666667 42.666667 0 0 0-42.666667 42.666666v234.666667a42.666667 42.666667 0 1 0 85.333334 0V309.333333a42.666667 42.666667 0 0 0-42.666667-42.666666z" p-id="2212" fill="#d81e06"></path></svg>注意：本网站仅把密码保存在本地，请妥善保管好生成的密码<br>            如果你清除浏览器数据，或者一旦数据超出20条之后，密码会被销毁，且无法恢复
+        <p class="gray"><svg t="1649312736974" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2211" width="16" height="16"><path d="M512 85.333333c235.637333 0 426.666667 191.029333 426.666667 426.666667S747.637333 938.666667 512 938.666667 85.333333 747.637333 85.333333 512 276.362667 85.333333 512 85.333333z m0 544a42.666667 42.666667 0 1 0 0 85.333334 42.666667 42.666667 0 0 0 0-85.333334z m0-362.666666a42.666667 42.666667 0 0 0-42.666667 42.666666v234.666667a42.666667 42.666667 0 1 0 85.333334 0V309.333333a42.666667 42.666667 0 0 0-42.666667-42.666666z" p-id="2212" fill="#d81e06"></path></svg>注意：本网站仅把密码保存在本地，请妥善保管好生成的密码，一旦你清除浏览器数据，或者数据超出20条之后，密码将会被逐行销毁，且无法再次呈现
         </p>
-        <div id="historybox"></div>
+        <div id="deleteHistory">清除数据</div>
+
     </div>
 </body>
 <script>
@@ -205,6 +232,7 @@
     let cap = document.querySelector('#cap')
     let special = document.querySelector('#special')
     let checkboxes = document.querySelectorAll('.checkbox')
+    let specialinput = document.querySelector('#specialinput')
         // 点击事件，取反当前选择
     checkboxes.forEach((item, index) => {
         item.addEventListener('click', function() {
@@ -246,7 +274,7 @@
             init_letter = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
         }
         if (special.checked) {
-            init_special = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_"]
+            init_special = specialinput.value.split('')
         }
 
         // 根据选择，拼串得到最后的数组
@@ -307,18 +335,42 @@
                 input.classList.add('input')
                 input.value = this.childNodes[1].innerText
                 document.body.appendChild(input);
-                input.select()
-                document.execCommand("copy");
-                this.childNodes[1].innerText = '已成功复制'
-                this.childNodes[1].style.color = 'red'
-                setTimeout(() => {
-                    this.childNodes[1].innerText = input.value
-                    document.body.removeChild(input)
-                }, 1000)
+                try {
+                    input.select()
+                    document.execCommand("copy");
+                    this.childNodes[1].innerText = '已成功复制'
+                    this.childNodes[1].style.color = 'red'
+                    setTimeout(() => {
+                        this.childNodes[1].innerText = input.value
+                        document.body.removeChild(input)
+                    }, 1000)
+                } catch {
+                    this.childNodes[1].innerText = 'opps, 不知道为何复制失败了呢'
+                }
+
             })
         })
     }
+
     copy()
+        // 删除历史记录
+    let deleteHistory = document.querySelector('#deleteHistory')
+    deleteHistory.addEventListener('click', () => {
+        localStorage.removeItem('history')
+        historybox.innerHTML = ''
+        history = []
+    })
+
+    // 黑暗模式切换
+    let darkmode = document.querySelector('#darkmode')
+    darkmode.addEventListener('click', () => {
+        let body = document.querySelector('body')
+        if (body.classList.contains('darkmode')) {
+            body.classList.remove('darkmode')
+        } else {
+            body.classList.add('darkmode')
+        }
+    })
 </script>
 
 </html>
